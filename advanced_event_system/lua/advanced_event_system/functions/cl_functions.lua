@@ -19,6 +19,7 @@ function AEvent:OpenMenu()
     local panel = self.Frame:Add("AEvent:Main")
     panel:Dock(FILL)
 end
+AEvent:OpenMenu()
 
 net.Receive("AEvent:SendEvents", function()
     local int, Events = net.ReadUInt(32), {}

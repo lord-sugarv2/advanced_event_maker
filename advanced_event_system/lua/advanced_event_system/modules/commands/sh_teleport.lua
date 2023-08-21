@@ -1,83 +1,56 @@
 local MODULE = table.Copy(AEvent.BaseModule)
-MODULE.CategoryID = "Command:Bring" -- THIS NEEDS TO BE A UNIQUE ID
-MODULE.Name = "Bring" -- Nicer name for the id to be displayed as
-
-local function GetLocations(str)
-    local tbl = {}
-    for _, v in ipairs(AEvent.Locations) do
-        table.Add(tbl, {{Text = v.name, Data = {Location = v.name, Job = str}}})
-    end
-    return tbl
-end
+MODULE.CategoryID = "Command:EventControls"
+MODULE.Name = "Event Controls"
 
 MODULE:AddCommand({
-    ID = "COMMAND:BRING:EVERYONEWITHEVENT",
-    Name = "everyone with "..AEvent.PreFix.." in thier name to '...'",
+    ID = "Command:EventControls:AddAll",
+    Name = "add everyone to the event",
     ExtraSelection = function()
-        local tbl = GetLocations("with prefix in name")
-        return tbl
+        return false
     end,
-    RunCommand = function()
+    RunCommand = function(data)
+        for _, ply in ipairs(player.GetAll()) do
+            AEvent:AddPlayerToEvent(ply)
+        end
     end,
 })
 
 MODULE:AddCommand({
-    ID = "COMMAND:BRING:EVERYONE",
-    Name = "everyone around the map to '...'",
+    ID = "Command:EventControls:AddTeam",
+    Name = "add team '...' to the event",
     ExtraSelection = function()
-        local tbl = GetLocations("everyone")
+        local tbl = {}
+        for _, job in ipairs(team.GetAllTeams()) do
+            table.Add(tbl, {{
+                Text = job.Name,
+                Data = {Job = job.Name, Example = "Hello World!"},
+            }})
+        end
         return tbl
     end,
-    RunCommand = function()
-    end,
-})
-
-for _, job in ipairs(team.GetAllTeams()) do
-    MODULE:AddCommand({
-        ID = "COMMAND:BRING:"..job.Name,
-        Name = job.Name.." to '...'",
-        ExtraSelection = function()
-            local tbl = GetLocations(job.Name)
-            return tbl
-        end,
-        RunCommand = function(data)
-            for _, ply in ipairs(player.GetAll()) do
-                if team.GetName(ply:Team()) ~= data.Job then continue end
-
-                local pos = AEvent:LocationToPos(data.Location)
-                if not pos then continue end
-                ply:SetPos(pos)
+    RunCommand = function(data)
+        for _, ply in ipairs(player.GetAll()) do
+            if string.lower(team.GetName(ply:Team())) == string.lower(data.Job) then
+                AEvent:AddPlayerToEvent(ply)
             end
-        end,
-    })
-end
-
-AEvent:CreateCommand(MODULE)
-
-
-local MODULE = table.Copy(AEvent.BaseModule)
-MODULE.CategoryID = "Command:Kill" -- THIS NEEDS TO BE A UNIQUE ID
-MODULE.Name = "Kill" -- Nicer name for the id to be displayed as
-
-MODULE:AddCommand({
-    ID = "COMMAND:KILL:EVERYONE",
-    Name = "everyone",
-    ExtraSelection = function()
-        return false
-    end,
-    RunCommand = function()
+        end
     end,
 })
 
 MODULE:AddCommand({
-    ID = "COMMAND:KILL:EVERYONEINEVENT",
-    Name = "everyone in the event",
+    ID = "Command:EventControls:AddWithName",
+    Name = "add people with '...' in thier name to the event",
     ExtraSelection = function()
-        return false
+        return {"String Input", "input a phrase"}
     end,
-    RunCommand = function()
+    RunCommand = function(data)
+        for _, ply in ipairs(player.GetAll()) do
+            local start, startend = string.find(string.lower(ply:Nick()), string.lower(data.Selection))
+            if start then
+                AEvent:AddPlayerToEvent(ply)
+            end
+        end
     end,
 })
-
 
 AEvent:CreateCommand(MODULE)

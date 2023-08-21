@@ -11,12 +11,19 @@ local DATA = {
 }
 --]]
 
-function AEvent:StartEvent()
-    for _, v in ipairs(DATA) do
+function AEvent:StartEvent(id)
+    local data = file.Read("AEvent_Events.txt") and util.JSONToTable(file.Read("AEvent_Events.txt")) or {}
+    data = AEvent:GetEvents(id)
+    if not data then print("[ AEVENT ] ID: "..id.." dosnt exist!") return end
+
+    for _, v in ipairs(data.hooks[1].commands) do
         local commandDATA = AEvent:GetCommand(v.commandID)
         if not commandDATA then continue end
         commandDATA.RunCommand(v.data)
     end
+end
+
+function AEvent:AddPlayerToEvent(ply)
 end
 
 function AEvent:GetEvents(id)

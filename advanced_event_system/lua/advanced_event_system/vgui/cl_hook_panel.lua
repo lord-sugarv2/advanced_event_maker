@@ -1,3 +1,13 @@
+local function TextEntryAnswer(text, callback)
+    Derma_StringRequest(
+	"AEvent Input", 
+	text,
+	"",
+	function(text) callback(text) end,
+	function(text) end
+    )
+end
+
 local PANEL = {}
 function PANEL:Init()
     self.margin = 3
@@ -22,7 +32,14 @@ function PANEL:Init()
             local panel, parent = menu:AddSubMenu(categoryDATA.Name)
             for commandID, commandDATA in pairs(categoryDATA.Commands) do
                 local extraSelections = commandDATA.ExtraSelection()
-                if extraSelections then
+                if extraSelections and extraSelections[1] == "String Input" then
+                    local panel, parent = panel:AddOption(commandDATA.Name, function()
+                        TextEntryAnswer(extraSelections[2], function(text)
+                            table.Add(self.Table, {{commandID = commandID, data = {Selection = text}}})
+                            self:AddCommand()
+                        end)
+                    end)
+                elseif extraSelections then
                     local panel, parent = panel:AddSubMenu(commandDATA.Name)
                     for _, v in ipairs(extraSelections) do
                         panel:AddOption(v.Text, function()
@@ -122,7 +139,19 @@ function PANEL:AddCommand(DATA)
             local panel, parent = panel:AddSubMenu(categoryDATA.Name)
             for commandID, commandDATA in pairs(categoryDATA.Commands) do
                 local extraSelections = commandDATA.ExtraSelection()
-                if extraSelections then
+                if extraSelections and extraSelections[1] == "String Input" then
+                    local panel, parent = panel:AddOption(commandDATA.Name, function()
+                        TextEntryAnswer(extraSelections[2], function(text)
+                            table.insert(self.Table, s.tablePos, "placeholder")
+                            self.Table[s.tablePos] = {
+                                commandID = commandID,
+                                data = {Selection = text},
+                            }
+                            self:RefreshInsertAbove(s.tablePos)
+                            self:RefreshLayout()
+                        end)
+                    end)
+                elseif extraSelections then
                     local panel, parent = panel:AddSubMenu(commandDATA.Name)
                     for _, v in ipairs(extraSelections) do
                         panel:AddOption(v.Text, function()
@@ -151,9 +180,9 @@ function PANEL:AddCommand(DATA)
         end
         menu:Open()
     end
+    label:SetAutoStretchVertical(true)
+    label:SetWrap(true)
     table.Add(self.panels, {{panel = label}})
-
-    self.extrasize = self.extrasize + self.margin + label:GetTall()
 end
 
 function PANEL:DeleteClicked() end
@@ -170,9 +199,11 @@ function PANEL:Paint(w, h)
 end
 
 function PANEL:PerformLayout(w, h)
-    self:SetTall(80 + self.extrasize)
+    local extra = 0
+    for _, v in ipairs(self.panels) do
+        extra = extra + v.panel:GetTall() + self.margin
+    end
+    self:SetTall(80 + extra)
 end
 
 vgui.Register("AEvent:HookPanel", PANEL, "EditablePanel")
-
-AEvent:OpenMenu()
