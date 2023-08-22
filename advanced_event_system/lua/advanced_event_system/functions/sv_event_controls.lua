@@ -34,8 +34,17 @@ function AEvent:StartEvent(id)
 end
 
 function AEvent:StopEvent(safe)
-    hook.Run("AEvent:ClearTimers")
+    hook.Run("AEvent:EventStopped")
+
+	for id, v in pairs(AEvent.Props) do
+		for _, ent in ipairs(v) do
+			if not IsValid(ent) then continue end
+			ent:Remove()
+		end
+	end
+
 	AEvent.CurrentEvent = {}
+	AEvent.Props = {}
 	AEvent:ClearAll()
 
     if safe then return end

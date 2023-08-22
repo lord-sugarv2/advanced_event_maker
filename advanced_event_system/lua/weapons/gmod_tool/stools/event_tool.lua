@@ -109,8 +109,8 @@ hook.Add("PostDrawTranslucentRenderables", "AEvent:PropSelector", function()
 	if shouldStop then return end
 
 	local cornerTwo = LocalPlayer():GetEyeTrace().HitPos
-	AEvent:DrawBox(cornerOne, cornerTwo, two)
-	AEvent:WireframeBox(cornerOne, cornerTwo, color_green_two)
+	AEvent:DrawBox(cornerOne, cornerTwo, color_green_two)
+	AEvent:WireframeBox(cornerOne, cornerTwo, color_green)
 end)
 
 local color_red = Color(0, 0, 0)

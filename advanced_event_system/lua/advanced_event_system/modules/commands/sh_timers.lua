@@ -32,7 +32,7 @@ MODULE:AddCommand({
 
 MODULE:AddCommand({
     ID = "Command:Timers:ScreenCount",
-    Name = "wait '...'s (screen countdown)",
+    Name = "wait '...'s (screen countdown for people in the event)",
     IsTimer = true,
     ExtraSelection = function()
         return {"String Input", "input a number"}
@@ -49,7 +49,7 @@ MODULE:AddCommand({
         for _, ply in ipairs(AEvent:GetPlayersInEvent()) do
             net.Start("AEvent:ScreenCountdown")
             net.WriteUInt(time, 32)
-            net.Send(ply)
+            net.Send(AEvent:GetPlayersInEvent())
         end
 
         local str = AEvent:GenerateID(20)
@@ -76,7 +76,7 @@ if CLIENT then
         }})
     end)
 
-    net.Receive("AEvent:ClearTimers", function()
+    net.Receive("AEvent:EventStopped", function()
         AEvent.Timers = {}
         AEvent.KillBoxes = {}
     end)
@@ -84,23 +84,25 @@ if CLIENT then
     hook.Add("HUDPaint", "AEvent:DrawHud", function()
         local y = ScrH()*.1
         for int, v in ipairs(AEvent.Timers) do
-            local time = math.max(math.Round(v.time-CurTime()), 0).."s"
-            if time == "0s" then table.remove(AEvent.Timers, int) continue end
-            draw.SimpleText(time, "AEvent:MegaLarge", ScrW()/2 + 2, y + 2, color_black, 1, 0)
-            draw.SimpleText(time, "AEvent:MegaLarge", ScrW()/2, y, color_white, 1, 0)
+            local time = v.time-CurTime()
+            if time < 0 then table.remove(AEvent.Timers, int) continue end
+            local niceTime = math.max(math.Round(v.time-CurTime()), 0).."s"
+            draw.SimpleText(niceTime, "AEvent:MegaLarge", ScrW()/2 + 2, y + 2, color_black, 1, 0)
+            draw.SimpleText(niceTime, "AEvent:MegaLarge", ScrW()/2, y, color_white, 1, 0)
             y = y + 70
         end
     end)
 else
     util.AddNetworkString("AEvent:ScreenCountdown")
-    util.AddNetworkString("AEvent:ClearTimers")
-    hook.Add("AEvent:ClearTimers", "AEvent:ClearTimers:RemoveTimers", function()
+    util.AddNetworkString("AEvent:EventStopped")
+    hook.Add("AEvent:EventStopped", "AEvent:EventStopped", function()
         for _, v in ipairs(AEvent.Timers) do
             timer.Remove(v)
         end
+
         AEvent.Timers = {}
 
-        net.Start("AEvent:ClearTimers")
+        net.Start("AEvent:EventStopped")
         net.Broadcast()
     end)
 end
