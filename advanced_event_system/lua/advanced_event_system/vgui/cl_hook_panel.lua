@@ -201,6 +201,7 @@ end
 function PANEL:PerformLayout(w, h)
     local extra = 0
     for _, v in ipairs(self.panels) do
+        if not IsValid(v.panel) then continue end
         extra = extra + v.panel:GetTall() + self.margin
     end
     self:SetTall(80 + extra)

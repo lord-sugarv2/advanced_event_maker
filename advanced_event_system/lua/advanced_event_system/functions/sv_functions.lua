@@ -1,29 +1,29 @@
---[[
-local DATA = {
-    {
-        ["commandID"] =	"COMMAND:BRING:Citizen",
-        ["data"] = {
-    		["Job"] = "Citizen",
-    		["Location"] = "Home",
-            ["selection"] = "...", -- this is only availble if the player chooses an option from a submenu
-        },
-    },
-}
---]]
+function AEvent:RunCommands(commands, ply)
+    local tbl = table.Copy(commands)
+    for _, v in ipairs(commands) do
+        local command = AEvent:GetCommand(v.commandID)
+        if command.IsTimer then
+            command.RunCommand(v.data, function()
+                table.remove(tbl, 1)
+                AEvent:RunCommands(tbl)
+            end)
+            break
+        end
 
-function AEvent:StartEvent(id)
-    local data = file.Read("AEvent_Events.txt") and util.JSONToTable(file.Read("AEvent_Events.txt")) or {}
-    data = AEvent:GetEvents(id)
-    if not data then print("[ AEVENT ] ID: "..id.." dosnt exist!") return end
-
-    for _, v in ipairs(data.hooks[1].commands) do
-        local commandDATA = AEvent:GetCommand(v.commandID)
-        if not commandDATA then continue end
-        commandDATA.RunCommand(v.data)
+        table.remove(tbl, 1)
+        v.data.playerSupplied = ply
+        command.RunCommand(v.data)
     end
 end
 
-function AEvent:AddPlayerToEvent(ply)
+function AEvent:GetHooksFromDATA(hookID, data)
+    local tbl = {}
+    for _, v in ipairs(data.hooks or {}) do
+        if v.hookID == hookID then
+            table.Add(tbl, {v})
+        end
+    end
+    return tbl
 end
 
 function AEvent:GetEvents(id)
@@ -121,4 +121,10 @@ net.Receive("AEvent:RemoveEvent", function(len, ply)
     table.Add(data, {tbl})
 
     file.Write("AEvent_Events.txt", util.TableToJSON(data, true))
+end)
+
+util.AddNetworkString("AEvent:StartEvent")
+net.Receive("AEvent:StartEvent", function(len, ply)
+    local id = net.ReadString()
+    AEvent:StartEvent(id)
 end)

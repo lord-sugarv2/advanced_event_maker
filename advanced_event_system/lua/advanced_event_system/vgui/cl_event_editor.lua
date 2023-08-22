@@ -37,7 +37,12 @@ function PANEL:Init()
                 net.Start("AEvent:RemoveEvent")
                 net.WriteString(self.eventID)
                 net.SendToServer()
-                AEvent.Frame:Remove()
+
+                local parent = self:GetParent()
+                self:Remove()
+
+                local panel = parent:Add("AEvent:Main")
+                panel:Dock(FILL)
             end,
             "No",
             function() end
@@ -64,6 +69,8 @@ function PANEL:Init()
     self.SaveButton:SetText("Save")
     self.SaveButton:SetColor(Color(55, 157, 247))
     self.SaveButton.DoClick = function(s)
+        self.StartButton:Show()
+
         local savedTbl = {}
         for _, v in ipairs(self.hookPanels) do
             table.Add(savedTbl, {{
@@ -88,6 +95,27 @@ function PANEL:Init()
             end
         end
         net.SendToServer()
+    end
+
+    self.StartButton = self.NavBox:Add("AEvent:Button")
+    self.StartButton:Dock(RIGHT)
+    self.StartButton:DockMargin(0, 0, self.margin, 0)
+    self.StartButton:SetWide(80)
+    self.StartButton:SetText("Start")
+    self.StartButton:SetColor(Color(0, 255, 21))
+    self.StartButton.DoClick = function(s)
+        Derma_Query(
+            "Are you sure you want to start this event?",
+            "Confirmation:",
+            "Yes",
+            function()
+                net.Start("AEvent:StartEvent")
+                net.WriteString(self.eventID)
+                net.SendToServer()
+            end,
+            "No",
+            function() end
+        )
     end
 
     self.NameLabel = self:Add("DTextEntry")
@@ -139,6 +167,7 @@ end
 
 function PANEL:CreateNew()
     self.CreateNew = true
+    self.StartButton:Hide()
 end
 
 function PANEL:Paint(w, h)

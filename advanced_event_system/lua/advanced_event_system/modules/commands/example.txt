@@ -57,6 +57,7 @@ MODULE:AddCommand({
             {
                 Job = "Citizen",
                 Selection = "Citizen", -- remember the computer inputs this automatically to show what we clicked
+                playerSupplied = ply, -- hooks such as player death can supply a player so we can target them
                 Example = "Hello World!",
             }
         ]]--
@@ -94,6 +95,19 @@ MODULE:AddCommand({
             if start then
                 ply:Kill()
             end
+        end
+    end,
+})
+
+MODULE:AddCommand({
+    ID = "killPerson",
+    Name = "Kill the person who caused the event", -- '...' will be replaced as the selected option
+    ExtraSelection = function()
+        return false
+    end,
+    RunCommand = function(data)
+        if IsValid(data.playerSupplied) then
+            data.playerSupplied:Kill()
         end
     end,
 })

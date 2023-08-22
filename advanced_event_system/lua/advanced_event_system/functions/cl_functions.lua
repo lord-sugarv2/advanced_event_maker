@@ -6,7 +6,7 @@ function AEvent:OpenMenu()
     self.Frame:SetSize(ScrW() * .2, ScrH() * .4)
     self.Frame:MakePopup()
     self.Frame:Center()
-    self.Frame:SetX(10)
+ --   self.Frame:SetX(10)
     self.Frame:DockPadding(5, 24 + 3, 5, 5)
     self.Frame.Paint = function(s, w, h)
         surface.SetDrawColor(0, 0, 0, 200)
@@ -19,7 +19,26 @@ function AEvent:OpenMenu()
     local panel = self.Frame:Add("AEvent:Main")
     panel:Dock(FILL)
 end
-AEvent:OpenMenu()
+
+list.Set(
+    "DesktopWindows", 
+    "AdvancedEvents",
+    {
+        title = "Advanced Event System",
+        icon = "icon16/plugin.png",
+        width = 300,
+        height = 170,
+        onewindow = false,
+        init = function(icn, pnl)
+            pnl:Remove()
+            AEvent:OpenMenu()
+        end
+    }
+)
+
+concommand.Add("aevent", function()
+    AEvent:OpenMenu()
+end)
 
 net.Receive("AEvent:SendEvents", function()
     local int, Events = net.ReadUInt(32), {}
