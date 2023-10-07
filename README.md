@@ -1,5 +1,7 @@
 youtube: https://youtu.be/ijJZ5HbHeo8
+
 discord: lord_sugar
+
 steam link: https://steamcommunity.com/sharedfiles/filedetails/?id=3047101426
 
 *note* the UI is considerably better than whats in the video (it has been changed)
