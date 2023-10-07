@@ -1,0 +1,72 @@
+-- creating a command / hook is extremely easy once you get the hang of it
+-- so this file explains the proccess
+
+-- to create a command copy the example below
+local MODULE = table.Copy(AEvent.BaseModule) -- leave this line
+MODULE.CategoryID = "Command:God" -- the categoryID / must be unique
+MODULE.Name = "God" -- the nice name of the category
+
+MODULE:AddCommand({
+    ID = "Command:God:God", -- this is the command id it MUST BE UNIQUE
+    Name = "god", -- this is the nice name of the command
+    ExtraSelection = function()
+        -- if you want a command that takes no inputs just return false
+        return false
+    
+        -- but if you want some inputs then copy the example below
+        return { -- you can use as much as these as u want the frame scales
+            {
+                text = "", -- combo input dosnt get this
+                Type = "Combo Input",
+                Options = {
+                    {
+                        text = "Option One",
+                        data = {banana = true}, -- data you want to store on a per option basis
+                    },
+                },
+                data = {}, -- if you want to store some data
+            },
+            {
+                text = "seconds", -- the title of the textbox
+                Type = "Int Input", -- a number input box
+                data = {},
+            },
+            {
+                text = "name", -- the title of the textbox
+                Type = "String Input", -- a string input box
+                data = {},
+            },
+        }
+    end,
+    RunCommand = function(data)
+        for _, ply in ipairs(data.players) do -- data.players is all the targeted player
+            -- to fetch the selected combo data you put
+            print(data.data[1].banana) -- where intValue is the int of the position in the table above ^
+            print(data.data[2].selected) -- selected is what the user inputted into the textbox / what they chose
+            print(data.data[3].selected) -- selected is what the user inputted into the textbox / what they chose
+        end
+    end,
+})
+
+AEvent:CreateCommand(MODULE) -- and then put this to finish the command
+
+
+-- to create a hook copy this example:
+local MODULE = {}
+MODULE.ID = "HOOK:OnEventPlayerDies" -- THIS MUST BE UNIQUE
+MODULE.Name = "When an event player dies" -- Nice text that gets displayed to represent the ID
+
+hook.Add("HOOK:OnEventPlayerDies", "HOOK:OnEventPlayerDies", function(data, ply)
+    -- then simply use this to run your set of commands
+    for _, v in ipairs(data) do
+        AEvent:RunCommandSet(v.commands, ply)
+    end
+end)
+
+hook.Add("PlayerDeath", MODULE.ID..":PlayerDeath", function(victim, inflictor, attacker)
+    if not AEvent:IsInEvent(victim) then return end -- make sure to check if they are in the event!
+    hook.Run("HOOK:OnEventPlayerDies", AEvent:GetHooksFromDATA("HOOK:OnEventPlayerDies", AEvent.currentEvent), victim)
+    -- and then run the MODULE.ID hookname and change the string from ^ to your hookID and everything is done!
+end)
+
+AEvent:CreateHook(MODULE)
